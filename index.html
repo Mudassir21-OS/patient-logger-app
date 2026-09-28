@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Patient Logger</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Patient Logger">
+<meta name="theme-color" content="#1F4E78">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <h1>Patient Logger</h1>
+  <span id="today-count" class="pill">Today: 0</span>
+</header>
+
+<main>
+  <!-- ============ NEW PATIENT ============ -->
+  <section id="tab-new" class="tab active" aria-label="New patient">
+    <div id="banner-install" class="banner hidden">
+      <strong>Install first:</strong> tap <b>Share</b> <span aria-hidden="true">&#x2191;</span> then
+      <b>Add to Home Screen</b>, and always open Patient Logger from its Home Screen icon.
+      Records saved here in Safari are kept separately from the Home Screen app.
+    </div>
+    <div id="banner-month" class="banner hidden">
+      <span id="banner-month-text"></span>
+      <button id="btn-banner-month" class="primary slim" type="button">Export month workbook</button>
+    </div>
+    <div id="banner-backup" class="banner warn hidden"></div>
+
+    <label class="speak-label" for="speak">Speak</label>
+    <textarea id="speak" rows="4" autocomplete="off" autocorrect="off" autocapitalize="sentences" spellcheck="false"
+      placeholder="Tap here, then tap the microphone on the keyboard and say: &#10;&#8220;Ahmed Khan, 45872, 45, male, fever&#8221;"></textarea>
+    <div class="hint-row">
+      <p class="hint" id="speak-hint">The boxes fill in as you speak. Say &#8220;&#8230;and save&#8221; at the end to save straight away.</p>
+      <button id="speak-clear" class="link" type="button">Clear box</button>
+    </div>
+
+    <div class="card form">
+      <label for="f-name">Patient name</label>
+      <input id="f-name" type="text" autocomplete="off" autocorrect="off" autocapitalize="words" spellcheck="false">
+
+      <div class="row2">
+        <div>
+          <label for="f-id">Patient ID</label>
+          <input id="f-id" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div>
+          <label for="f-age">Age</label>
+          <input id="f-age" type="text" inputmode="numeric" autocomplete="off" autocorrect="off" spellcheck="false" placeholder="years or 6m">
+        </div>
+      </div>
+
+      <label>Gender</label>
+      <div class="seg" id="f-gender" role="radiogroup" aria-label="Gender">
+        <button type="button" data-g="Male" role="radio" aria-checked="false">Male</button>
+        <button type="button" data-g="Female" role="radio" aria-checked="false">Female</button>
+        <button type="button" data-g="Other" role="radio" aria-checked="false">Other</button>
+      </div>
+
+      <label for="f-diag">Diagnosis</label>
+      <textarea id="f-diag" rows="2" autocapitalize="sentences"></textarea>
+
+      <div id="warn" class="warn-text" role="alert"></div>
+
+      <div class="actions">
+        <button id="btn-save" class="primary" type="button">Save patient</button>
+        <button id="btn-clear" class="secondary" type="button">Clear</button>
+      </div>
+    </div>
+
+    <div class="card mini">
+      <div id="last-entry" class="muted">No patients saved today yet.</div>
+      <button id="btn-undo" class="link danger hidden" type="button">Delete last entry</button>
+    </div>
+  </section>
+
+  <!-- ============ RECORDS ============ -->
+  <section id="tab-records" class="tab" aria-label="Records">
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search name or ID" autocomplete="off" autocorrect="off" spellcheck="false">
+      <select id="date-filter" aria-label="Day"></select>
+    </div>
+    <div id="records-count" class="muted small"></div>
+    <ul id="records" class="records"></ul>
+  </section>
+
+  <!-- ============ MORE ============ -->
+  <section id="tab-more" class="tab" aria-label="Export and settings">
+    <div class="card">
+      <h2>Export to Excel</h2>
+      <p class="muted small">Every record stays in the app &#8211; exporting only makes a copy. Send the file by AirDrop, email or WhatsApp, or save it to Files.</p>
+      <div class="stack">
+        <label for="export-month" class="tight">Monthly workbook: summary, all patients, and one sheet per day</label>
+        <div class="row-inline">
+          <select id="export-month" aria-label="Month to export"></select>
+          <button id="btn-export-month" class="primary" type="button">Export month</button>
+        </div>
+        <button id="btn-export-today" class="secondary" type="button">Export today only</button>
+        <div class="row-inline">
+          <select id="export-day" aria-label="Day to export"></select>
+          <button id="btn-export-day" class="secondary" type="button">Export day</button>
+        </div>
+        <button id="btn-export-all" class="secondary" type="button">Export everything (one sheet per month)</button>
+      </div>
+      <p id="last-export" class="muted small"></p>
+    </div>
+
+    <div class="card">
+      <h2>Backup</h2>
+      <p class="muted small">Records are stored only on this iPhone. Save a backup file to Files or iCloud Drive now and then. You can restore it here or on a new phone.</p>
+      <div class="stack">
+        <button id="btn-backup" class="secondary" type="button">Save backup file</button>
+        <label class="button secondary" for="restore-file">Restore from backup&#8230;</label>
+        <input id="restore-file" type="file" accept=".json,application/json" class="hidden">
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Settings</h2>
+      <label class="toggle"><input id="s-digits" type="checkbox"> Patient ID has digits only</label>
+      <div class="row2">
+        <div><label for="s-min">ID min length</label><input id="s-min" type="number" inputmode="numeric" min="1" max="50"></div>
+        <div><label for="s-max">ID max length</label><input id="s-max" type="number" inputmode="numeric" min="1" max="50"></div>
+      </div>
+      <p class="muted small">Set both to the hospital's exact ID length for the strictest check.</p>
+    </div>
+
+    <div class="card">
+      <h2>Help: what to say</h2>
+      <ul class="help">
+        <li>&#8220;Ahmed Khan, 45872, 45, male, fever&#8221; &#8211; no keywords needed. Say the <b>name first</b>, then ID, age and gender in any order, and the <b>diagnosis last</b>.</li>
+        <li>Keywords still work: &#8220;Name &#8230; ID &#8230; age &#8230; gender &#8230; diagnosis &#8230;&#8221;</li>
+        <li>End with &#8220;<b>and save</b>&#8221; to save straight away.</li>
+        <li>Fix a box: keep talking &#8211; &#8220;ID 45873&#8221; or &#8220;age 46&#8221; &#8211; the last one said wins. Or just type in the box.</li>
+        <li>Spell a name: &#8220;spell A H M E D space K H A N&#8221;</li>
+        <li>Babies: &#8220;6 months old&#8221; is saved as 6m</li>
+        <li>Voice commands (said alone): &#8220;save&#8221;, &#8220;next patient&#8221;, &#8220;delete last&#8221;</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Recently deleted</h2>
+      <p class="muted small">Deleted records wait here and can be restored at any time. Nothing is erased unless you empty this list yourself.</p>
+      <p id="bin-count" class="muted small"></p>
+      <ul id="bin-list" class="records bin"></ul>
+      <div class="stack">
+        <button id="btn-bin-restore-all" class="secondary hidden" type="button">Restore all</button>
+        <button id="btn-bin-empty" class="secondary danger hidden" type="button">Erase permanently&#8230;</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Data on this phone</h2>
+      <p id="storage-info" class="muted small"></p>
+      <button id="btn-wipe" class="secondary danger" type="button">Move all records to Recently deleted&#8230;</button>
+    </div>
+    <p class="muted small center">Patient Logger v1.1 &#183; works offline &#183; nothing is sent to the internet</p>
+  </section>
+</main>
+
+<nav class="tabbar" aria-label="Sections">
+  <button data-tab="tab-new" class="active" type="button"><span class="ico">&#65291;</span>New</button>
+  <button data-tab="tab-records" type="button"><span class="ico">&#9776;</span>Records</button>
+  <button data-tab="tab-more" type="button"><span class="ico">&#8942;</span>Export &amp; more</button>
+</nav>
+
+<!-- edit sheet -->
+<div id="sheet" class="sheet hidden" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <div class="sheet-body card form">
+    <h2 id="sheet-title">Edit record</h2>
+    <p id="e-when" class="muted small"></p>
+    <label for="e-name">Patient name</label>
+    <input id="e-name" type="text" autocomplete="off" autocorrect="off" autocapitalize="words">
+    <div class="row2">
+      <div><label for="e-id">Patient ID</label><input id="e-id" type="text" inputmode="numeric" autocomplete="off"></div>
+      <div><label for="e-age">Age</label><input id="e-age" type="text" inputmode="numeric" autocomplete="off"></div>
+    </div>
+    <label>Gender</label>
+    <div class="seg" id="e-gender">
+      <button type="button" data-g="Male">Male</button>
+      <button type="button" data-g="Female">Female</button>
+      <button type="button" data-g="Other">Other</button>
+    </div>
+    <label for="e-diag">Diagnosis</label>
+    <textarea id="e-diag" rows="2"></textarea>
+    <div id="e-warn" class="warn-text"></div>
+    <div class="actions">
+      <button id="e-save" class="primary" type="button">Save changes</button>
+      <button id="e-cancel" class="secondary" type="button">Cancel</button>
+    </div>
+    <button id="e-delete" class="link danger" type="button">Delete this record</button>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+<script src="parser.js"></script>
+<script src="vendor/xlsx.full.min.js" defer></script>
+<script src="app.js"></script>
+</body>
+</html>

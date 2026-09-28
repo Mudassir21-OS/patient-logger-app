@@ -1,0 +1,15 @@
+{
+  "name": "Patient Logger",
+  "short_name": "Patient Logger",
+  "description": "Speak a patient's name, ID, age and gender and save it. Works offline; data stays on the phone.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F2F4F7",
+  "theme_color": "#1F4E78",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
